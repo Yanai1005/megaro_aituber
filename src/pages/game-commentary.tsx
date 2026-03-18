@@ -54,27 +54,23 @@ export default function GameCommentary() {
   const [panelOpen, setPanelOpen] = useState(false)
   const [debugOpen, setDebugOpen] = useState(false)
 
-  const [apiKey, setApiKey] = useState('')
-  const [aiService, setAiService] = useState('openai')
-  const [aiModel, setAiModel] = useState('gpt-4o')
-  const [voiceEngine, setVoiceEngine] = useState('openai')
+  const [aiModel, setAiModel] = useState('gemini-2.5-flash-lite')
+  const [voiceEngine, setVoiceEngine] = useState('browser')
 
   const streamRef = useRef<MediaStream | null>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
   const autoTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   useEffect(() => {
+    const ss = settingsStore.getState()
     settingsStore.setState({
+      selectAIService: 'google',
       systemPrompt: GAME_COMMENTARY_SYSTEM_PROMPT,
       enableMultiModal: true,
       multiModalMode: 'always',
     })
-    const ss = settingsStore.getState()
-    setAiService(ss.selectAIService)
-    setAiModel(ss.selectAIModel)
-    setVoiceEngine(ss.selectVoice || 'openai')
-    if (ss.selectAIService === 'openai') setApiKey(ss.openaiKey || '')
-    if (ss.selectAIService === 'anthropic') setApiKey(ss.anthropicKey || '')
+    setAiModel(ss.selectAIModel || 'gemini-2.5-flash-lite')
+    setVoiceEngine(ss.selectVoice || 'browser')
   }, [])
 
   const startScreenShare = useCallback(async () => {
@@ -155,9 +151,7 @@ export default function GameCommentary() {
 
   const saveSettings = useCallback(() => {
     settingsStore.setState({
-      selectAIService: aiService as ReturnType<
-        typeof settingsStore.getState
-      >['selectAIService'],
+      selectAIService: 'google',
       selectAIModel: aiModel,
       selectVoice: voiceEngine as ReturnType<
         typeof settingsStore.getState
@@ -165,10 +159,8 @@ export default function GameCommentary() {
       enableMultiModal: true,
       multiModalMode: 'always' as const,
       systemPrompt: GAME_COMMENTARY_SYSTEM_PROMPT,
-      ...(aiService === 'openai' && { openaiKey: apiKey }),
-      ...(aiService === 'anthropic' && { anthropicKey: apiKey }),
     })
-  }, [aiService, aiModel, apiKey, voiceEngine])
+  }, [aiModel, voiceEngine])
 
   return (
     <div className="relative h-screen overflow-hidden bg-black">
@@ -415,41 +407,13 @@ export default function GameCommentary() {
             </h3>
             <div>
               <label className="block text-gray-300 text-xs mb-1">
-                サービス
+                モデル（Google Gemini）
               </label>
-              <select
-                value={aiService}
-                onChange={(e) => setAiService(e.target.value)}
-                className="w-full bg-gray-700 text-white rounded-lg px-3 py-2 text-sm outline-none"
-              >
-                <option value="openai">OpenAI</option>
-                <option value="anthropic">Anthropic</option>
-                <option value="google">Google Gemini</option>
-                <option value="groq">Groq</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-gray-300 text-xs mb-1">モデル</label>
               <input
                 type="text"
                 value={aiModel}
                 onChange={(e) => setAiModel(e.target.value)}
-                placeholder="例: gpt-4o"
-                className="w-full bg-gray-700 text-white rounded-lg px-3 py-2 text-sm outline-none placeholder-gray-500"
-              />
-              <p className="text-gray-600 text-xs mt-1">
-                ※ マルチモーダル対応モデル推奨
-              </p>
-            </div>
-            <div>
-              <label className="block text-gray-300 text-xs mb-1">
-                APIキー
-              </label>
-              <input
-                type="password"
-                value={apiKey}
-                onChange={(e) => setApiKey(e.target.value)}
-                placeholder="sk-..."
+                placeholder="例: gemini-2.5-flash-lite"
                 className="w-full bg-gray-700 text-white rounded-lg px-3 py-2 text-sm outline-none placeholder-gray-500"
               />
             </div>
@@ -465,9 +429,11 @@ export default function GameCommentary() {
               onChange={(e) => setVoiceEngine(e.target.value)}
               className="w-full bg-gray-700 text-white rounded-lg px-3 py-2 text-sm outline-none"
             >
-              <option value="openai">OpenAI TTS</option>
+              <option value="browser">ブラウザ（無料）</option>
+              <option value="aivis_cloud_api">Aivis Cloud API</option>
               <option value="voicevox">VOICEVOX（ローカル）</option>
               <option value="aivis_speech">AivisSpeech（ローカル）</option>
+              <option value="openai">OpenAI TTS</option>
               <option value="google">Google TTS</option>
               <option value="elevenlabs">ElevenLabs</option>
             </select>
