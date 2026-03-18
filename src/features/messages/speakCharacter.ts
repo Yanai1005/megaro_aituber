@@ -14,6 +14,7 @@ import { synthesizeVoiceAivisCloudApi } from './synthesizeVoiceAivisCloudApi'
 import { synthesizeVoiceGSVIApi } from './synthesizeVoiceGSVI'
 import { synthesizeVoiceOpenAIApi } from './synthesizeVoiceOpenAI'
 import { synthesizeVoiceAzureOpenAIApi } from './synthesizeVoiceAzureOpenAI'
+import { synthesizeVoiceBrowserApi } from './synthesizeVoiceBrowser'
 import toastStore from '@/features/stores/toast'
 import i18next from 'i18next'
 import { SpeakQueue } from './speakQueue'
@@ -176,6 +177,8 @@ async function synthesizeVoice(
           ss.openaiTTSVoice,
           ss.openaiTTSSpeed
         )
+      case 'browser':
+        return await synthesizeVoiceBrowserApi(talk, ss.selectLanguage)
       default:
         return null
     }
@@ -378,6 +381,7 @@ export const testVoice = async (voiceType: AIVoice, customText?: string) => {
     cartesia: 'Cartesiaを使用します',
     openai: 'OpenAI TTSを使用します',
     azure: 'Azure TTSを使用します',
+    browser: 'ブラウザTTSを使用します',
   }
 
   const message = customText || defaultMessages[voiceType]

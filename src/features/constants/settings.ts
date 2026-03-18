@@ -96,6 +96,7 @@ export type AIVoice =
   | 'cartesia'
   | 'openai'
   | 'azure'
+  | 'browser'
 
 export type Language = (typeof LANGUAGES)[number]
 

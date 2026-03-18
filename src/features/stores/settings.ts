@@ -297,8 +297,14 @@ const getInitialValuesFromEnv = (): SettingsState => ({
     process.env.NEXT_PUBLIC_OPENAI_API_KEY ||
     process.env.NEXT_PUBLIC_OPENAI_KEY ||
     '',
-  anthropicKey: '',
-  googleKey: '',
+  anthropicKey:
+    process.env.NEXT_PUBLIC_ANTHROPIC_API_KEY ||
+    process.env.NEXT_PUBLIC_ANTHROPIC_KEY ||
+    '',
+  googleKey:
+    process.env.NEXT_PUBLIC_GOOGLE_API_KEY ||
+    process.env.NEXT_PUBLIC_GOOGLE_KEY ||
+    '',
   azureKey:
     process.env.NEXT_PUBLIC_AZURE_API_KEY ||
     process.env.NEXT_PUBLIC_AZURE_KEY ||

@@ -35,7 +35,9 @@ export default async function handler(
       )
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+        const errorBody = await response.text()
+        console.error('Google TTS API error:', response.status, errorBody)
+        throw new Error(`HTTP error! status: ${response.status}, body: ${errorBody}`)
       }
 
       const data = await response.json()
