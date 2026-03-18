@@ -65,7 +65,11 @@ export default function GameCommentary() {
     const ss = settingsStore.getState()
     settingsStore.setState({
       selectAIService: 'google',
+      selectAIModel: ss.selectAIModel || 'gemini-2.5-flash-lite',
       systemPrompt: GAME_COMMENTARY_SYSTEM_PROMPT,
+    })
+    // Rule 8 が multiModalMode を 'never' に上書きするため、別呼び出しで後から設定
+    settingsStore.setState({
       enableMultiModal: true,
       multiModalMode: 'always',
     })
@@ -156,9 +160,12 @@ export default function GameCommentary() {
       selectVoice: voiceEngine as ReturnType<
         typeof settingsStore.getState
       >['selectVoice'],
+      systemPrompt: GAME_COMMENTARY_SYSTEM_PROMPT,
+    })
+    // Rule 8 による上書きを防ぐため後から設定
+    settingsStore.setState({
       enableMultiModal: true,
       multiModalMode: 'always' as const,
-      systemPrompt: GAME_COMMENTARY_SYSTEM_PROMPT,
     })
   }, [aiModel, voiceEngine])
 
