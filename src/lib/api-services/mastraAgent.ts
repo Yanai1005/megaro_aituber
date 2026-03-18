@@ -52,7 +52,9 @@ function extractSystemAndChatMessages(messages: Message[]): {
  * https://ai-sdk.dev/docs/ai-sdk-ui/stream-protocol
  */
 function buildSseResponse(
-  stream: AsyncIterable<string | { type: string; textDelta?: string; [key: string]: unknown }>
+  stream: AsyncIterable<
+    string | { type: string; textDelta?: string; [key: string]: unknown }
+  >
 ): Response {
   const encoder = new TextEncoder()
 
@@ -111,25 +113,40 @@ export async function streamWithMastraAgent({
   providerOptions?: Record<string, Record<string, unknown>>
 }) {
   const { systemPrompt, chatMessages } = extractSystemAndChatMessages(messages)
-  const agent = buildMastraAgent({ service, params, model, systemPrompt, options })
+  const agent = buildMastraAgent({
+    service,
+    params,
+    model,
+    systemPrompt,
+    options,
+  })
 
   if (!agent) {
     return new Response(
-      JSON.stringify({ error: 'Invalid AI service', errorCode: 'InvalidAIService' }),
+      JSON.stringify({
+        error: 'Invalid AI service',
+        errorCode: 'InvalidAIService',
+      }),
       { status: 400, headers: { 'Content-Type': 'application/json' } }
     )
   }
 
   try {
-    const result = await agent.stream(chatMessages as any, {
-      temperature,
-      maxOutputTokens: maxTokens,
-      ...(providerOptions && { providerOptions: providerOptions as any }),
-    } as any)
+    const result = await agent.stream(
+      chatMessages as any,
+      {
+        temperature,
+        maxOutputTokens: maxTokens,
+        ...(providerOptions && { providerOptions: providerOptions as any }),
+      } as any
+    )
 
-    return buildSseResponse((result as any).textStream ?? (result as any).fullStream)
+    return buildSseResponse(
+      (result as any).textStream ?? (result as any).fullStream
+    )
   } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    const errorMessage =
+      error instanceof Error ? error.message : 'Unknown error'
     console.error(`Mastra Agent Stream Error: ${errorMessage}`)
     console.error(`Model: ${model}, Temperature: ${temperature}`)
 
@@ -165,24 +182,31 @@ export async function generateWithMastraAgent({
 
   if (!agent) {
     return new Response(
-      JSON.stringify({ error: 'Invalid AI service', errorCode: 'InvalidAIService' }),
+      JSON.stringify({
+        error: 'Invalid AI service',
+        errorCode: 'InvalidAIService',
+      }),
       { status: 400, headers: { 'Content-Type': 'application/json' } }
     )
   }
 
   try {
-    const result = await agent.generate(chatMessages as any, {
-      temperature,
-      maxOutputTokens: maxTokens,
-      ...(providerOptions && { providerOptions: providerOptions as any }),
-    } as any)
+    const result = await agent.generate(
+      chatMessages as any,
+      {
+        temperature,
+        maxOutputTokens: maxTokens,
+        ...(providerOptions && { providerOptions: providerOptions as any }),
+      } as any
+    )
 
     return new Response(JSON.stringify({ text: result.text }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     })
   } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    const errorMessage =
+      error instanceof Error ? error.message : 'Unknown error'
     console.error(`Mastra Agent Generate Error: ${errorMessage}`)
     console.error(`Model: ${model}, Temperature: ${temperature}`)
 
