@@ -1,30 +1,54 @@
-# ベースイメージとしてNode.js 24を使用
-FROM node:24
+# Stage 1: Builder
+FROM node:24-alpine AS builder
 
-# 必要なシステムライブラリをインストール
-RUN apt-get update && apt-get install -y \
-    libcairo2-dev \
-    libpango1.0-dev \
-    libjpeg-dev \
-    libgif-dev \
-    librsvg2-dev \
-    pkg-config \
-    && rm -rf /var/lib/apt/lists/*
+# Install system libraries required by canvas
+RUN apk add --no-cache \
+    cairo-dev \
+    pango-dev \
+    jpeg-dev \
+    giflib-dev \
+    librsvg-dev \
+    pkgconfig \
+    python3 \
+    make \
+    g++
 
-# 作業ディレクトリを設定
 WORKDIR /app
 
-# package.jsonとpackage-lock.jsonをコピー
 COPY package*.json ./
-
-# 依存関係をインストール
 RUN npm ci
 
-# アプリケーションのソースコードをコピー
 COPY . .
 
-# 3000番ポートを公開
+# Build the Next.js application
+RUN npm run build
+
+# Stage 2: Runner
+FROM node:24-slim AS runner
+
+# Install runtime system libraries required by canvas
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libcairo2 \
+    libpango-1.0-0 \
+    libpangocairo-1.0-0 \
+    libjpeg62-turbo \
+    libgif7 \
+    librsvg2-2 \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Copy built application from builder
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
+
 EXPOSE 3000
 
-# 開発モードでアプリケーションを起動
-CMD ["npm", "run", "dev"]
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+
+CMD ["node", "server.js"]
