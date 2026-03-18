@@ -1,0 +1,23 @@
+# Copy this file to terraform.tfvars and fill in your values.
+# terraform.tfvars is git-ignored to prevent secret leaks.
+
+subscription_id     = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+resource_group_name = "megaro-aituber-prod-rg"
+location            = "japaneast"
+acr_name            = "megaroacr"       # Must be globally unique, lowercase, alphanumeric
+app_name            = "megaro-aituber"  # Must be globally unique (becomes <app_name>.azurewebsites.net)
+sku_name            = "B2"             # B1/B2/B3 (Basic), P1v3/P2v3/P3v3 (Premium)
+container_image_tag = "latest"
+
+# Non-secret environment variables for the app.
+# Secret values (API keys etc.) should be set separately via:
+#   az webapp config appsettings set --settings KEY=VALUE
+app_env_vars = {
+  NEXT_PUBLIC_AITUBER_KIT_ENV = "production"
+}
+
+tags = {
+  project     = "megaro-aituber"
+  environment = "prod"
+  managed_by  = "terraform"
+}
