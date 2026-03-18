@@ -64,19 +64,22 @@ export class Viewer {
         obj.frustumCulled = false
       })
 
-      this.model.vrm.scene.visible = false
       this._scene.add(this.model.vrm.scene)
 
-      try {
-        const vrma = await loadVRMAnimation(buildUrl('/idle_loop.vrma'))
-        if (vrma) this.model.loadAnimation(vrma)
-      } finally {
-        this.model.vrm.scene.visible = true
-      }
-
-      // HACK: アニメーションの原点がずれているので再生後にカメラ位置を調整する
+      // カメラ位置をモデル表示直後に調整
       requestAnimationFrame(() => {
         this.resetCamera()
+      })
+
+      // アニメーションはバックグラウンドでロード（表示をブロックしない）
+      loadVRMAnimation(buildUrl('/idle_loop.vrma')).then((vrma) => {
+        if (vrma && this.model) {
+          this.model.loadAnimation(vrma)
+          // アニメーション適用後にカメラ位置を再調整
+          requestAnimationFrame(() => {
+            this.resetCamera()
+          })
+        }
       })
     })
   }
@@ -102,7 +105,7 @@ export class Viewer {
       antialias: true,
     })
     this._renderer.setSize(width, height)
-    this._renderer.setPixelRatio(window.devicePixelRatio)
+    this._renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5))
 
     // camera
     this._camera = new THREE.PerspectiveCamera(20.0, width / height, 0.1, 20.0)
@@ -143,7 +146,7 @@ export class Viewer {
     const parentElement = this._renderer.domElement.parentElement
     if (!parentElement) return
 
-    this._renderer.setPixelRatio(window.devicePixelRatio)
+    this._renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5))
     this._renderer.setSize(
       parentElement.clientWidth,
       parentElement.clientHeight
