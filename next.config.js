@@ -7,6 +7,7 @@ const nextConfig = {
   basePath: process.env.BASE_PATH || '',
   trailingSlash: true,
   ...(!isRestrictedMode && {
+    output: 'standalone',
     outputFileTracingRoot: __dirname,
   }),
   // Cloudflare Workers向け
