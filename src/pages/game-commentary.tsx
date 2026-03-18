@@ -63,9 +63,18 @@ export default function GameCommentary() {
 
   useEffect(() => {
     const ss = settingsStore.getState()
+    // voicevox はサーバー側のローカルサービスのためデプロイ環境では動作しない
+    // voicevox が選択されている場合はブラウザTTSにフォールバック
+    const voiceForPage =
+      ss.selectVoice === 'voicevox' || !ss.selectVoice
+        ? 'browser'
+        : ss.selectVoice
     settingsStore.setState({
       selectAIService: 'google',
       selectAIModel: ss.selectAIModel || 'gemini-2.5-flash-lite',
+      selectVoice: voiceForPage as ReturnType<
+        typeof settingsStore.getState
+      >['selectVoice'],
       systemPrompt: GAME_COMMENTARY_SYSTEM_PROMPT,
     })
     // Rule 8 が multiModalMode を 'never' に上書きするため、別呼び出しで後から設定
@@ -74,7 +83,7 @@ export default function GameCommentary() {
       multiModalMode: 'always',
     })
     setAiModel(ss.selectAIModel || 'gemini-2.5-flash-lite')
-    setVoiceEngine(ss.selectVoice || 'browser')
+    setVoiceEngine(voiceForPage)
   }, [])
 
   const startScreenShare = useCallback(async () => {
