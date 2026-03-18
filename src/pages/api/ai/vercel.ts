@@ -7,10 +7,9 @@ import {
 } from '@/features/constants/settings'
 import { modifyMessages } from '@/lib/api-services/utils'
 import {
-  createAIRegistry,
-  streamAiText,
-  generateAiText,
-} from '@/lib/api-services/vercelAi'
+  streamWithMastraAgent,
+  generateWithMastraAgent,
+} from '@/lib/api-services/mastraAgent'
 import { buildReasoningProviderOptions } from '@/lib/api-services/providerOptionsBuilder'
 import { googleSearchGroundingModels } from '@/features/constants/aiModels'
 import { pipeResponse } from '@/utils/pipeResponse'
@@ -99,20 +98,6 @@ export default async function handler(
   }
 
   try {
-    // Provider Registryの作成
-    const registry = createAIRegistry(aiService as VercelAIService, {
-      apiKey: aiApiKey,
-      baseURL: localLlmUrl,
-      resourceName: modifiedAzureEndpoint,
-    })
-
-    if (!registry) {
-      return res.status(400).json({
-        error: 'Invalid AI service',
-        errorCode: 'InvalidAIService',
-      })
-    }
-
     // メッセージの修正
     const modifiedMessages = modifyMessages(aiService, model, messages)
 
@@ -150,12 +135,18 @@ export default async function handler(
     )
 
     // ストリーミングレスポンスまたは一括レスポンスの生成
+    const agentParams = {
+      apiKey: aiApiKey,
+      baseURL: localLlmUrl,
+      resourceName: modifiedAzureEndpoint,
+    }
+
     let response: Response
     if (stream) {
-      response = await streamAiText({
-        model: modifiedModel,
-        registry,
+      response = await streamWithMastraAgent({
         service: aiService as VercelAIService,
+        params: agentParams,
+        model: modifiedModel,
         messages: modifiedMessages,
         temperature,
         maxTokens,
@@ -163,10 +154,10 @@ export default async function handler(
         providerOptions,
       })
     } else {
-      response = await generateAiText({
-        model: modifiedModel,
-        registry,
+      response = await generateWithMastraAgent({
         service: aiService as VercelAIService,
+        params: agentParams,
+        model: modifiedModel,
         messages: modifiedMessages,
         temperature,
         maxTokens,
