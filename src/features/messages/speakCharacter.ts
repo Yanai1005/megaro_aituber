@@ -234,8 +234,11 @@ const createSpeakCharacter = () => {
 
     const processAndSynthesizePromise = prevFetchPromise.then(async () => {
       const now = Date.now()
-      if (now - lastTime < 1000) {
-        await wait(1000 - (now - lastTime))
+      // ローカルサービス（voicevox, aivis_speech）はレート制限がないためスロットル不要
+      const localVoices = ['voicevox', 'aivis_speech']
+      const minInterval = localVoices.includes(ss.selectVoice) ? 0 : 1000
+      if (now - lastTime < minInterval) {
+        await wait(minInterval - (now - lastTime))
       }
 
       // ボタン停止でキャンセルされた場合はここで終了

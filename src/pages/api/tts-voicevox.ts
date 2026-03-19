@@ -1,5 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import axios from 'axios'
+import http from 'http'
+
+const httpAgent = new http.Agent({ keepAlive: true })
 
 type Data = {
   audio?: ArrayBuffer
@@ -23,7 +26,8 @@ export default async function handler(
         headers: {
           'Content-Type': 'application/json',
         },
-        timeout: 30000,
+        httpAgent,
+        timeout: 10000,
       }
     )
 
@@ -42,7 +46,8 @@ export default async function handler(
           Accept: 'audio/wav',
         },
         responseType: 'arraybuffer',
-        timeout: 30000,
+        httpAgent,
+        timeout: 10000,
       }
     )
 
