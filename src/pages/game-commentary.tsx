@@ -63,7 +63,10 @@ export default function GameCommentary() {
 
   useEffect(() => {
     const ss = settingsStore.getState()
-    const voiceForPage = ss.selectVoice || 'voicevox'
+    const voiceForPage =
+      !ss.selectVoice || ss.selectVoice === 'browser'
+        ? 'voicevox'
+        : ss.selectVoice
     settingsStore.setState({
       selectAIService: 'google',
       selectAIModel: ss.selectAIModel || 'gemini-2.5-flash-lite',
