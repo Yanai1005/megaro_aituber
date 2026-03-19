@@ -63,12 +63,7 @@ export default function GameCommentary() {
 
   useEffect(() => {
     const ss = settingsStore.getState()
-    // voicevox はサーバー側のローカルサービスのためデプロイ環境では動作しない
-    // voicevox が選択されている場合はブラウザTTSにフォールバック
-    const voiceForPage =
-      ss.selectVoice === 'voicevox' || !ss.selectVoice
-        ? 'browser'
-        : ss.selectVoice
+    const voiceForPage = ss.selectVoice || 'voicevox'
     settingsStore.setState({
       selectAIService: 'google',
       selectAIModel: ss.selectAIModel || 'gemini-2.5-flash-lite',
